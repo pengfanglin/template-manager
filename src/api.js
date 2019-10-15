@@ -1,4 +1,5 @@
 export const api = {
+  uploadFiles: 'common/uploadFiles',
   login: 'systemController/login',
   leftMenuTree: 'system/getLeftMenuTree',
   getSystemModuleList: 'system/getSystemModuleList',

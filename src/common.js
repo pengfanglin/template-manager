@@ -7,22 +7,20 @@ export const common = {
     Vue.prototype.homeUrl = functions.apiUrl;
     //项目访问前缀
     Vue.prototype.imgUrl = functions.imgUrl;
-    //项目访问前缀
-    Vue.prototype.uploadPath = functions.uploadPath;
     //默认显示图片路径
     Vue.prototype.defaultImg = require('./assets/images/common/404.png');
     //判断参数是否为空或者undefined
     Vue.prototype.isEmpty = functions.isEmpty;
+    //判断参数是否为空或者undefined
+    Vue.prototype.notEmpty = functions.notEmpty;
     //Axios的post请求的再封装
     Vue.prototype.post = functions.post;
     //Axios的get请求的再封装
+    Vue.prototype.get = functions.get;
+    //Axios的postStream请求的再封装
     Vue.prototype.postStream = functions.postStream;
     //ajax请求封装
     Vue.prototype.ajaxFileUpload = functions.ajaxFileUpload;
-    //请求成功的回调
-    Vue.prototype.doSuccess = functions.doSuccess;
-    //请求失败的回调
-    Vue.prototype.doError = functions.doError;
     //弹出输入框
     Vue.prototype.prompt = functions.prompt;
     //弹出确认框
@@ -48,7 +46,7 @@ export const common = {
       inserted: (el) => {
         el.focus();
       }
-    })
+    });
     Vue.prototype.validator = {
       mobile: (rule, value, callback) => {
         if (isEmpty(value)) {

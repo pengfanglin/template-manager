@@ -1,5 +1,6 @@
 import Qs from 'qs'
-import {axios, imgUrl, apiUrl, uploadPath} from "./axios";
+import {axios, imgUrl, apiUrl} from "./axios";
+import {api} from './api'
 
 /**
  * 判断参数是否为空
@@ -14,6 +15,15 @@ function isEmpty(data) {
   } else {
     return Array.isArray(data) && data.length === 0;
   }
+}
+
+/**
+ * 判断参数是否不为空
+ * @param data
+ * @returns {boolean}
+ */
+function notEmpty(data) {
+  return !isEmpty(data);
 }
 
 /**
@@ -80,6 +90,10 @@ function get(url, params, success, error) {
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
     }
   };
+  let accessToken = localStorage.getItem('AUTHORIZATION');
+  if (notEmpty(accessToken)) {
+    config.headers['AUTHORIZATION'] = accessToken;
+  }
   url = apiUrl + url;
   let i = 0;
   for (let key in params) {
@@ -91,46 +105,67 @@ function get(url, params, success, error) {
     i++;
   }
   axios.get(url, config).then((response) => {
-    this.loadingClose();
-    let data = response.data;
-    if (data.code === 200) {
-      if (success) {
-        success(data.data);
-      } else {
-        this.doSuccess(data.data);
-      }
-    } else if (data.code === 401) {
-      this.$router.push('/login');
-    } else {
-      if (error) {
-        error(data);
-      } else {
-        this.doError(data.error)
-      }
-    }
+    successHandler(response, success, error);
   }).catch((error) => {
-    this.loadingClose();
-    console.log(error);
-    if (isEmpty(error.response)) {
-      this.$message.error('服务器未响应');
-    } else if (error.response.status === 400) {
-      this.$message.error('请求异常');
-    } else if (error.response.status === 401) {
-      this.$message.error('未授权，请登录');
-    } else if (error.response.status === 403) {
-      this.$message.error('无权限');
-    } else if (error.response.status === 404) {
-      this.$message.error('未知的请求');
-    } else if (error.response.status === 500) {
-      this.$message.error('服务器错误');
-    } else if (error.response.status === 502) {
-      this.$message.error('网关异常');
-    } else if (error.response.status === 504) {
-      this.$message.error('服务器没有响应');
-    } else {
-      this.$message.error('未知的错误');
+      errorHandler(error);
     }
-  });
+  );
+}
+
+/**
+ * 请求成功的处理
+ * @param response 返回结果
+ * @param success 成功的回调
+ * @param error 失败的回调
+ */
+function successHandler(response, success, error) {
+  this.loadingClose();
+  let data = response.data;
+  if (data.code === 200) {
+    if (success) {
+      success(data.data);
+    } else {
+      this.doSuccess(data.data);
+    }
+  } else if (data.code === 401) {
+    this.$router.push('/login');
+  } else {
+    if (error) {
+      error(data);
+    } else {
+      this.doError(data.error)
+    }
+  }
+}
+
+/**
+ * 请求失败的处理
+ * @param response 返回结果
+ * @param success 成功的回调
+ * @param error 失败的回调
+ */
+function errorHandler(error) {
+  this.loadingClose();
+  console.log(error);
+  if (isEmpty(error.response)) {
+    this.$message.error('服务器未响应');
+  } else if (error.response.status === 400) {
+    this.$message.error('请求异常');
+  } else if (error.response.status === 401) {
+    this.$message.error('未授权，请登录');
+  } else if (error.response.status === 403) {
+    this.$message.error('无权限');
+  } else if (error.response.status === 404) {
+    this.$message.error('未知的请求');
+  } else if (error.response.status === 500) {
+    this.$message.error('服务器错误');
+  } else if (error.response.status === 502) {
+    this.$message.error('网关异常');
+  } else if (error.response.status === 504) {
+    this.$message.error('服务器没有响应');
+  } else {
+    this.$message.error('未知的错误');
+  }
 }
 
 /**
@@ -153,46 +188,14 @@ function post(url, params, success, error) {
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
     }
   };
+  let accessToken = localStorage.getItem('AUTHORIZATION');
+  if (notEmpty(accessToken)) {
+    config.headers['AUTHORIZATION'] = accessToken;
+  }
   axios.post(apiUrl + url, Qs.stringify(params), config).then((response) => {
-    this.loadingClose();
-    let data = response.data;
-    if (data.code === 200) {
-      if (success) {
-        success(data.data);
-      } else {
-        this.doSuccess(data.data);
-      }
-    } else if (data.code === 401) {
-      this.$router.push('/login');
-    } else {
-      if (error) {
-        error(data);
-      } else {
-        this.doError(data.error)
-      }
-    }
+    successHandler(response, success, error);
   }).catch((error) => {
-    this.loadingClose();
-    console.log(error);
-    if (isEmpty(error.response)) {
-      this.$message.error('服务器未响应');
-    } else if (error.response.status === 400) {
-      this.$message.error('请求异常');
-    } else if (error.response.status === 401) {
-      this.$message.error('未授权，请登录');
-    } else if (error.response.status === 403) {
-      this.$message.error('无权限');
-    } else if (error.response.status === 404) {
-      this.$message.error('未知的请求');
-    } else if (error.response.status === 500) {
-      this.$message.error('服务器错误');
-    } else if (error.response.status === 502) {
-      this.$message.error('网关异常');
-    } else if (error.response.status === 504) {
-      this.$message.error('服务器没有响应');
-    } else {
-      this.$message.error('未知的错误');
-    }
+    errorHandler(error);
   });
 }
 
@@ -208,9 +211,15 @@ function postStream(url, params, success, error, fileName) {
   if (isEmpty(params)) {
     params = {};
   }
+  let accessToken = localStorage.getItem('AUTHORIZATION');
+  let headers = {};
+  if (notEmpty(accessToken)) {
+    headers['AUTHORIZATION'] = accessToken;
+  }
   axios({
     method: 'post',
     url: apiUrl + url,
+    headers: headers,
     data: Qs.stringify(params),
     responseType: 'blob'
   }).then((response) => {
@@ -236,23 +245,7 @@ function postStream(url, params, success, error, fileName) {
       upload.click();
     }
   }).catch((error) => {
-    this.loadingClose();
-    console.log(error);
-    if (isEmpty(error.response)) {
-      this.$message.error('程序错误,请查看控制台');
-    } else if (error.response.status === 500) {
-      this.$message.error('服务器错误');
-    } else if (error.response.status === 400) {
-      this.$message.error('请求异常');
-    } else if (error.response.status === 404) {
-      this.$message.error('未知的请求');
-    } else if (error.response.status === 504) {
-      this.$message.error('服务器没有响应');
-    } else if (error.response.status === 502) {
-      this.$message.error('服务器未启动');
-    } else {
-      this.$message.error('未知的错误');
-    }
+    errorHandler(error);
   });
 }
 
@@ -263,33 +256,21 @@ function postStream(url, params, success, error, fileName) {
  * @param error 请求失败的回调函数
  */
 function ajaxFileUpload(params, success, error) {
+  let accessToken = localStorage.getItem('AUTHORIZATION');
+  let headers = {
+    'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundaryA6FNOAaDnOdIigs4',
+  };
+  if (notEmpty(accessToken)) {
+    headers['AUTHORIZATION'] = accessToken;
+  }
   let config = {
     timeout: 30000,
-    headers: {
-      'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundaryA6FNOAaDnOdIigs4',
-      'AUTHORIZATION': isEmpty(this.$store.getters.systemAccount) ? '' : this.$store.getters.systemAccount.token
-    }
+    headers: headers
   };
-  axios.post(uploadPath, params, config).then((response) => {
-    let data = response.data;
-    if (data.code === 200) {
-      if (success) {
-        success(data)
-      } else {
-        this.doSuccess(data.data);
-      }
-    } else if (data.code === 401) {
-      this.$route.push('/login');
-    } else {
-      if (error) {
-        error(data);
-      } else {
-        this.doError(data.error);
-      }
-    }
+  axios.post(api.uploadFiles, params, config).then((response) => {
+    successHandler(response);
   }).catch((error) => {
-    console.log(error);
-    this.$message.error('上传失败');
+    errorHandler(error);
   });
 }
 
@@ -506,13 +487,13 @@ function convertBase64UrlToBlob(urlData) {
 
 export const functions = {
   isEmpty,
+  notEmpty,
   randomString,
   getCurrentTime,
   post,
+  get,
   postStream,
   ajaxFileUpload,
-  doSuccess,
-  doError,
   loading,
   loadingClose,
   prompt,
@@ -520,6 +501,5 @@ export const functions = {
   validate,
   photoCompress,
   apiUrl,
-  imgUrl,
-  uploadPath
+  imgUrl
 };
